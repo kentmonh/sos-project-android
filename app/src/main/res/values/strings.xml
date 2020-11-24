@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Sos Project</string>
+    <string name="mapbox_access_token">pk.eyJ1Ijoia2VudG1vbmgiLCJhIjoiY2todXJtNXdjMG5oYTJycDVmbjNnN2pxZSJ9.I_ME1G4dG1s9Ru5mDGiEEg</string>
+</resources>
