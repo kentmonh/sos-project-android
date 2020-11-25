@@ -5,6 +5,9 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.Intent;
+import android.graphics.PointF;
+import android.graphics.RectF;
 import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
@@ -21,6 +24,10 @@ import com.mapbox.android.core.location.LocationEngineRequest;
 import com.mapbox.android.core.location.LocationEngineResult;
 import com.mapbox.android.core.permissions.PermissionsListener;
 import com.mapbox.android.core.permissions.PermissionsManager;
+import com.mapbox.mapboxsdk.annotations.Icon;
+import com.mapbox.mapboxsdk.annotations.IconFactory;
+import com.mapbox.mapboxsdk.annotations.MarkerOptions;
+import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.location.LocationComponent;
 import com.mapbox.mapboxsdk.location.LocationComponentActivationOptions;
 import com.mapbox.mapboxsdk.location.modes.CameraMode;
@@ -37,7 +44,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 public class CreateSosActivity extends AppCompatActivity implements
-        OnMapReadyCallback, PermissionsListener {
+        OnMapReadyCallback, PermissionsListener, MapboxMap.OnMapClickListener {
 
     private MapView mapView;
     private MapboxMap mapboxMap;
@@ -55,6 +62,8 @@ public class CreateSosActivity extends AppCompatActivity implements
     private EditText etName, etPhone, etAddress, etNote;
     private Button btnCreateSos;
 
+    private double lat = 181, lng = 181;
+
     private DatabaseReference databaseReference;
 
     @Override
@@ -66,6 +75,7 @@ public class CreateSosActivity extends AppCompatActivity implements
         mapView.onCreate(savedInstanceState);
         mapView.getMapAsync(this);
 
+        Log.d("MINH", "Lat: "+ lat);
 
         etName = findViewById(R.id.etName);
         etPhone = findViewById(R.id.etPhone);
@@ -86,6 +96,8 @@ public class CreateSosActivity extends AppCompatActivity implements
         public void onClick(View view) {
             if (view.getId() == R.id.btnCreateSos) {
                 AddSos();
+                Intent intent = new Intent(CreateSosActivity.this, MainActivity.class);
+                startActivity(intent);
             }
         }
     }
@@ -97,8 +109,10 @@ public class CreateSosActivity extends AppCompatActivity implements
         String address = etAddress.getText().toString();
         String note = etNote.getText().toString();
 
-        double lat = mapboxMap.getLocationComponent().getLastKnownLocation().getLatitude();
-        double lng = mapboxMap.getLocationComponent().getLastKnownLocation().getLongitude();
+        if (lat > 180) {
+            lat = mapboxMap.getLocationComponent().getLastKnownLocation().getLatitude();
+            lng = mapboxMap.getLocationComponent().getLastKnownLocation().getLongitude();
+        }
 
         Sos newSos = new Sos(name, phone, address, note, lat, lng);
         Log.d("MINH", "new Sos: "+ newSos);
@@ -107,16 +121,36 @@ public class CreateSosActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void onMapReady(@NonNull MapboxMap mapboxMap) {
+    public void onMapReady(@NonNull final MapboxMap mapboxMap) {
 
-        this.mapboxMap = mapboxMap;
+        CreateSosActivity.this.mapboxMap = mapboxMap;
 
         mapboxMap.setStyle(Style.MAPBOX_STREETS, new Style.OnStyleLoaded() {
             @Override
             public void onStyleLoaded(@NonNull Style style) {
+                mapboxMap.addOnMapClickListener(CreateSosActivity.this);
                 enableLocationComponent(style);
             }
         });
+    }
+
+    public boolean onMapClick(@NonNull LatLng point) {
+        Toast.makeText(this, "Clicked Map: " + point.getLatitude(), Toast.LENGTH_LONG).show();
+
+        mapboxMap.clear();
+
+        lat = point.getLatitude();
+        lng = point.getLongitude();
+
+        // Add icon
+        IconFactory iconFactory = IconFactory.getInstance(CreateSosActivity.this);
+        Icon icon = iconFactory.fromResource(R.drawable.mapbox_marker_icon_default);
+
+        mapboxMap.addMarker(new MarkerOptions()
+                .position(new LatLng(lat, lng))
+                .icon(icon));
+
+        return true;
     }
 
     @SuppressWarnings( {"MissingPermission"})

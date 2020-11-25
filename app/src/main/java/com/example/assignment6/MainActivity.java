@@ -12,6 +12,7 @@ import com.google.firebase.database.ValueEventListener;
 import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.annotations.Icon;
 import com.mapbox.mapboxsdk.annotations.IconFactory;
+import com.mapbox.mapboxsdk.annotations.Marker;
 import com.mapbox.mapboxsdk.annotations.MarkerOptions;
 
 import com.mapbox.mapboxsdk.geometry.LatLng;
@@ -116,6 +117,32 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                                 .title(sosItems.get(i).getName() + " / " + sosItems.get(i).getMobilePhone())
                                 .snippet(sosItems.get(i).getAddress() + " / " + sosItems.get(i).getNote())
                                 .icon(icon));
+
+                        mapboxMap.setOnMarkerClickListener(new MapboxMap.OnMarkerClickListener() {
+
+                            Marker lastMarker = null;
+                            public boolean onMarkerClick(@NonNull Marker marker) {
+                                if (marker != lastMarker) {
+                                    marker.showInfoWindow(mapboxMap, mapView);
+                                    if (lastMarker != null) {
+                                        lastMarker.hideInfoWindow();
+                                    }
+                                }
+                                else {
+                                    if (marker.isInfoWindowShown()) {
+                                        marker.hideInfoWindow();
+                                    }
+                                    else {
+                                        marker.showInfoWindow(mapboxMap, mapView);
+                                    }
+                                }
+
+                                lastMarker = marker;
+
+                                Toast.makeText(getApplicationContext(), "Test Click Marker" + sosItems.get(i).getName(), Toast.LENGTH_SHORT).show();
+                                return true;
+                            }
+                        });
                     }
                 }
 
@@ -133,6 +160,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             super.onPostExecute(aVoid);
         }
     }
+
+
 
     // To inflate the xml menu file for toolbar
     @Override

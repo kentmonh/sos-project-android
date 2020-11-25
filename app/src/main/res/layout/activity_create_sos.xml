@@ -61,8 +61,13 @@
 
     <Button
         android:id="@+id/btnCreateSos"
-        android:layout_width="match_parent"
+        android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:hint="Create Your SOS" />
+        android:layout_gravity="bottom"
+        android:layout_margin="8dp"
+        android:background="@color/colorPrimary"
+        android:text="Create Your SOS"
+        android:textColor="@android:color/white" />
+
 
 </LinearLayout>
