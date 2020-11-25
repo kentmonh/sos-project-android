@@ -114,8 +114,10 @@ public class CreateSosActivity extends AppCompatActivity implements
         String address = etAddress.getText().toString();
         String note = etNote.getText().toString();
 
-        double lat = mapboxMap.getLocationComponent().getLastKnownLocation().getLatitude();
-        double lng = mapboxMap.getLocationComponent().getLastKnownLocation().getLongitude();
+        if (lat > 180) {
+            lat = mapboxMap.getLocationComponent().getLastKnownLocation().getLatitude();
+            lng = mapboxMap.getLocationComponent().getLastKnownLocation().getLongitude();
+        }
 
         Sos newSos = new Sos(name, phone, address, note, lat, lng);
         Log.d("MINH", "new Sos: "+ newSos);

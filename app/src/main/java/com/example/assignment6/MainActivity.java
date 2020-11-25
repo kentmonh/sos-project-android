@@ -69,6 +69,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         mapView.getMapAsync(this);
 
         btnDeleteSos = findViewById(R.id.btnDeleteSos);
+        btnDeleteSos.setVisibility(View.GONE);
     }
 
     @Override
@@ -121,12 +122,13 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     IconFactory iconFactory = IconFactory.getInstance(MainActivity.this);
                     Icon icon = iconFactory.fromResource(R.drawable.mapbox_marker_icon_default);
 
+                    mapboxMap.clear();
+
                     for (int i = 0; i < sosItems.size(); i++) {
                         mapboxMap.addMarker(new MarkerOptions()
                                 .position(new LatLng(sosItems.get(i).getLat(), sosItems.get(i).getLng()))
-                                .title(sosItems.get(i).getName() + " / " + sosItems.get(i).getMobilePhone()
-                                    + " / " + sosItems.get(i).getAddress() + " / " + sosItems.get(i).getNote())
-                                .snippet(keys.get(i))
+                                .title(sosItems.get(i).getName() + " / " + sosItems.get(i).getMobilePhone())
+                                .snippet(sosItems.get(i).getAddress() + " / " + sosItems.get(i).getNote())
                                 .icon(icon));
                     }
 
@@ -135,7 +137,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         Marker lastMarker = null;
                         public boolean onMarkerClick(@NonNull final Marker marker) {
                             if (marker != lastMarker) {
+
                                 marker.showInfoWindow(mapboxMap, mapView);
+                                btnDeleteSos.setVisibility(View.VISIBLE);
+
                                 if (lastMarker != null) {
                                     lastMarker.hideInfoWindow();
                                 }
@@ -143,16 +148,19 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                             else {
                                 if (marker.isInfoWindowShown()) {
                                     marker.hideInfoWindow();
+                                    btnDeleteSos.setVisibility(View.GONE);
                                 }
                                 else {
                                     marker.showInfoWindow(mapboxMap, mapView);
+                                    btnDeleteSos.setVisibility(View.VISIBLE);
                                 }
                             }
                             lastMarker = marker;
 
                             // Deal with delete function.
-                            databaseReference = databaseReference.child(marker.getSnippet());
                             Log.d("MINH", "Location key: " + marker.getSnippet());
+                            databaseReference = FirebaseDatabase.getInstance().getReference().child("sos").child(marker.getSnippet());
+                            Log.d("MINH", "Database Reference: " + databaseReference);
 
                             btnDeleteSos.setOnClickListener(new View.OnClickListener() {
                                 @Override
@@ -162,7 +170,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                                         public void onComplete(@NonNull Task<Void> task) {
                                             if (task.isSuccessful()) {
                                                 Log.d("MINH", "Delete success!");
+                                                Log.d("MINH", "sosItems size: " + sosItems.size());
                                                 marker.remove();
+                                                btnDeleteSos.setVisibility(View.GONE);
                                             }
                                             else {
                                                 Log.d("MINH", "S.t happen in delete!");
