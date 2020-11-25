@@ -117,33 +117,33 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                                 .title(sosItems.get(i).getName() + " / " + sosItems.get(i).getMobilePhone())
                                 .snippet(sosItems.get(i).getAddress() + " / " + sosItems.get(i).getNote())
                                 .icon(icon));
+                    }
 
-                        mapboxMap.setOnMarkerClickListener(new MapboxMap.OnMarkerClickListener() {
+                    mapboxMap.setOnMarkerClickListener(new MapboxMap.OnMarkerClickListener() {
 
-                            Marker lastMarker = null;
-                            public boolean onMarkerClick(@NonNull Marker marker) {
-                                if (marker != lastMarker) {
-                                    marker.showInfoWindow(mapboxMap, mapView);
-                                    if (lastMarker != null) {
-                                        lastMarker.hideInfoWindow();
-                                    }
+                        Marker lastMarker = null;
+                        public boolean onMarkerClick(@NonNull Marker marker) {
+                            if (marker != lastMarker) {
+                                marker.showInfoWindow(mapboxMap, mapView);
+                                if (lastMarker != null) {
+                                    lastMarker.hideInfoWindow();
+                                }
+                            }
+                            else {
+                                if (marker.isInfoWindowShown()) {
+                                    marker.hideInfoWindow();
                                 }
                                 else {
-                                    if (marker.isInfoWindowShown()) {
-                                        marker.hideInfoWindow();
-                                    }
-                                    else {
-                                        marker.showInfoWindow(mapboxMap, mapView);
-                                    }
+                                    marker.showInfoWindow(mapboxMap, mapView);
                                 }
-
-                                lastMarker = marker;
-
-                                Toast.makeText(getApplicationContext(), "Test Click Marker" + sosItems.get(i).getName(), Toast.LENGTH_SHORT).show();
-                                return true;
                             }
-                        });
-                    }
+
+                            lastMarker = marker;
+
+                            Toast.makeText(getApplicationContext(), "Test Click Marker: " + marker.getId(), Toast.LENGTH_SHORT).show();
+                            return true;
+                        }
+                    });
                 }
 
                 @Override
