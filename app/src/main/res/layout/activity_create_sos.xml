@@ -69,5 +69,4 @@
         android:text="Create Your SOS"
         android:textColor="@android:color/white" />
 
-
 </LinearLayout>

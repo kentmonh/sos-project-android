@@ -17,6 +17,9 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 // Mapbox
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.ValueEventListener;
 import com.mapbox.android.core.location.LocationEngine;
 import com.mapbox.android.core.location.LocationEngineCallback;
 import com.mapbox.android.core.location.LocationEngineProvider;
@@ -38,6 +41,7 @@ import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
 import com.mapbox.mapboxsdk.maps.Style;
 import java.lang.ref.WeakReference;
 import java.util.List;
+import java.util.Random;
 
 // Google Firebase
 import com.google.firebase.database.DatabaseReference;
@@ -82,12 +86,12 @@ public class CreateSosActivity extends AppCompatActivity implements
         etAddress = findViewById(R.id.etAddress);
         etNote = findViewById(R.id.etNote);
 
-        databaseReference = FirebaseDatabase.getInstance().getReference().child("sos");
-
         // Event handling
         btnCreateSos = findViewById(R.id.btnCreateSos);
         CreateSosActivity.EventHandler eventHandler = new CreateSosActivity.EventHandler();
         btnCreateSos.setOnClickListener(eventHandler);
+
+        databaseReference = FirebaseDatabase.getInstance().getReference().child("sos");
     }
 
     // Click listener
@@ -98,6 +102,7 @@ public class CreateSosActivity extends AppCompatActivity implements
                 AddSos();
                 Intent intent = new Intent(CreateSosActivity.this, MainActivity.class);
                 startActivity(intent);
+                finish();
             }
         }
     }
@@ -109,10 +114,8 @@ public class CreateSosActivity extends AppCompatActivity implements
         String address = etAddress.getText().toString();
         String note = etNote.getText().toString();
 
-        if (lat > 180) {
-            lat = mapboxMap.getLocationComponent().getLastKnownLocation().getLatitude();
-            lng = mapboxMap.getLocationComponent().getLastKnownLocation().getLongitude();
-        }
+        double lat = mapboxMap.getLocationComponent().getLastKnownLocation().getLatitude();
+        double lng = mapboxMap.getLocationComponent().getLastKnownLocation().getLongitude();
 
         Sos newSos = new Sos(name, phone, address, note, lat, lng);
         Log.d("MINH", "new Sos: "+ newSos);
@@ -135,8 +138,6 @@ public class CreateSosActivity extends AppCompatActivity implements
     }
 
     public boolean onMapClick(@NonNull LatLng point) {
-        Toast.makeText(this, "Clicked Map: " + point.getLatitude(), Toast.LENGTH_LONG).show();
-
         mapboxMap.clear();
 
         lat = point.getLatitude();
@@ -272,5 +273,46 @@ public class CreateSosActivity extends AppCompatActivity implements
                         Toast.LENGTH_SHORT).show();
             }
         }
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        Log.d("MINH", "Activity B - onStart()");
+    }
+
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        Log.d("MINH", "Activity B - onRestart()");
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.d("MINH", "Activity B - onResume()");
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        Log.d("MINH", "Activity B - onPause()");
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        Log.d("MINH", "Activity B - onStop()");
+    }
+
+    @Override
+    protected void onDestroy() {
+        // Prevent leaks
+        if (locationEngine != null) {
+            locationEngine.removeLocationUpdates(callback);
+        }
+
+        super.onDestroy();
+        Log.d("MINH", "Activity B - onDestroy()");
     }
 }
