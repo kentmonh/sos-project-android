@@ -43,13 +43,19 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback {
 
     private ArrayList<Sos> sosItems = new ArrayList<Sos>();
-    private ArrayList<String> keys = new ArrayList<String>();
+    private ArrayList<String> sosKeys = new ArrayList<String>();
+    private ArrayList<Rescue> rescueItems = new ArrayList<Rescue>();
+    private ArrayList<String> rescueKeys = new ArrayList<String>();
+
     private MapView mapView;
     private MapboxMap mapboxMap;
     private Toolbar toolbar;
-    private DatabaseReference databaseReference;
+
+    private DatabaseReference databaseReferenceSos;
+    private DatabaseReference databaseReferenceRescue;
 
     private Button btnDeleteSos;
+    private Button btnDeleteRescue;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,6 +76,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         btnDeleteSos = findViewById(R.id.btnDeleteSos);
         btnDeleteSos.setVisibility(View.GONE);
+        btnDeleteRescue = findViewById(R.id.btnDeleteRescue);
+        btnDeleteRescue.setVisibility(View.GONE);
     }
 
     @Override
@@ -100,9 +108,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         @Override
         protected Void doInBackground(Void... voids) {
-            // Markers
-            databaseReference = FirebaseDatabase.getInstance().getReference().child("sos");
-            databaseReference.addValueEventListener(new ValueEventListener() {
+            // Markers for Sos
+            databaseReferenceSos = FirebaseDatabase.getInstance().getReference().child("sos");
+            databaseReferenceSos.addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     // set code to retrieve data and replace layout
@@ -112,7 +120,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     {
                         Sos s = dataSnapshot1.getValue(Sos.class);
                         sosItems.add(s);
-                        keys.add(dataSnapshot1.getKey());
+                        sosKeys.add(dataSnapshot1.getKey());
                         Log.d("MINH", "get key of sos items: " + dataSnapshot1.getKey());
                     }
 
@@ -120,7 +128,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                     // Add icon
                     IconFactory iconFactory = IconFactory.getInstance(MainActivity.this);
-                    Icon icon = iconFactory.fromResource(R.drawable.mapbox_marker_icon_default);
+                    Icon iconSos = iconFactory.fromResource(R.drawable.mapbox_marker_icon_default);
 
                     mapboxMap.clear();
 
@@ -129,8 +137,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                                 .position(new LatLng(sosItems.get(i).getLat(), sosItems.get(i).getLng()))
                                 .title(sosItems.get(i).getName() + " / " + sosItems.get(i).getMobilePhone()
                                     + "\r\n" + sosItems.get(i).getAddress() + " / " + sosItems.get(i).getNote())
-                                .snippet(keys.get(i))
-                                .icon(icon));
+                                .snippet(sosKeys.get(i))
+                                .icon(iconSos));
                     }
 
                     mapboxMap.setOnMarkerClickListener(new MapboxMap.OnMarkerClickListener() {
@@ -160,13 +168,13 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                             // Deal with delete function.
                             Log.d("MINH", "Location key: " + marker.getSnippet());
-                            databaseReference = FirebaseDatabase.getInstance().getReference().child("sos").child(marker.getSnippet());
-                            Log.d("MINH", "Database Reference: " + databaseReference);
+                            databaseReferenceSos = FirebaseDatabase.getInstance().getReference().child("sos").child(marker.getSnippet());
+                            Log.d("MINH", "Database Reference: " + databaseReferenceSos);
 
                             btnDeleteSos.setOnClickListener(new View.OnClickListener() {
                                 @Override
                                 public void onClick(View view) {
-                                    databaseReference.removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+                                    databaseReferenceSos.removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
                                         @Override
                                         public void onComplete(@NonNull Task<Void> task) {
                                             if (task.isSuccessful()) {
@@ -195,6 +203,102 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     Toast.makeText(getApplicationContext(), "Cannot retrieve data", Toast.LENGTH_SHORT).show();
                 }
             });
+
+            // Markers for Rescue
+            databaseReferenceRescue = FirebaseDatabase.getInstance().getReference().child("rescue");
+            databaseReferenceRescue.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    // set code to retrieve data and replace layout
+                    rescueItems.clear();
+
+                    for(DataSnapshot dataSnapshot1: dataSnapshot.getChildren())
+                    {
+                        Rescue r = dataSnapshot1.getValue(Rescue.class);
+                        rescueItems.add(r);
+                        rescueKeys.add(dataSnapshot1.getKey());
+                        Log.d("MINH", "get key of rescue items: " + dataSnapshot1.getKey());
+                    }
+
+                    Log.d("MINH", "rescueItems size: " + rescueItems.size());
+
+                    // Add icon
+                    IconFactory iconFactory = IconFactory.getInstance(MainActivity.this);
+                    Icon iconRescue = iconFactory.fromResource(R.drawable.mapbox_compass_icon);
+
+                    mapboxMap.clear();
+
+                    for (int i = 0; i < rescueItems.size(); i++) {
+                        mapboxMap.addMarker(new MarkerOptions()
+                                .position(new LatLng(rescueItems.get(i).getLat(), rescueItems.get(i).getLng()))
+                                .title(rescueItems.get(i).getName() + " / " + rescueItems.get(i).getMobilePhone())
+                                .snippet(rescueKeys.get(i))
+                                .icon(iconRescue));
+                    }
+
+                    mapboxMap.setOnMarkerClickListener(new MapboxMap.OnMarkerClickListener() {
+
+                        Marker lastMarker = null;
+                        public boolean onMarkerClick(@NonNull final Marker marker) {
+                            if (marker != lastMarker) {
+
+                                marker.showInfoWindow(mapboxMap, mapView);
+                                btnDeleteRescue.setVisibility(View.VISIBLE);
+
+                                if (lastMarker != null) {
+                                    lastMarker.hideInfoWindow();
+                                }
+                            }
+                            else {
+                                if (marker.isInfoWindowShown()) {
+                                    marker.hideInfoWindow();
+                                    btnDeleteRescue.setVisibility(View.GONE);
+                                }
+                                else {
+                                    marker.showInfoWindow(mapboxMap, mapView);
+                                    btnDeleteRescue.setVisibility(View.VISIBLE);
+                                }
+                            }
+                            lastMarker = marker;
+
+                            // Deal with delete function.
+                            Log.d("MINH", "Location key: " + marker.getSnippet());
+                            databaseReferenceRescue = FirebaseDatabase.getInstance().getReference().child("rescue").child(marker.getSnippet());
+                            Log.d("MINH", "Database Reference: " + databaseReferenceRescue);
+
+                            btnDeleteRescue.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View view) {
+                                    databaseReferenceRescue.removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+                                        @Override
+                                        public void onComplete(@NonNull Task<Void> task) {
+                                            if (task.isSuccessful()) {
+                                                Log.d("MINH", "Delete success!");
+                                                Log.d("MINH", "rescueItems size: " + rescueItems.size());
+                                                marker.remove();
+                                                btnDeleteRescue.setVisibility(View.GONE);
+                                            }
+                                            else {
+                                                Log.d("MINH", "S.t happen in delete!");
+                                            }
+                                        }
+
+                                    });
+                                }
+                            });
+
+                            return true;
+                        }
+                    });
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+                    // set code to show an error
+                    Toast.makeText(getApplicationContext(), "Cannot retrieve data", Toast.LENGTH_SHORT).show();
+                }
+            });
+
             return null;
         }
 
@@ -218,10 +322,13 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
-            // Add new Sos Location
             case R.id.create_sos:
-                Intent intent = new Intent(this, CreateSosActivity.class);
-                startActivity(intent);
+                Intent intentCreateSosActivity = new Intent(this, CreateSosActivity.class);
+                startActivity(intentCreateSosActivity);
+                break;
+            case R.id.create_rescue:
+                Intent intentCreateRescueActivity = new Intent(this, CreateRescueActivity.class);
+                startActivity(intentCreateRescueActivity);
                 break;
         }
 

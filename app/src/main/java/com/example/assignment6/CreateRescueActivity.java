@@ -4,10 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.Intent;
-import android.graphics.PointF;
-import android.graphics.RectF;
 import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
@@ -16,10 +13,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-// Mapbox
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.mapbox.android.core.location.LocationEngine;
 import com.mapbox.android.core.location.LocationEngineCallback;
 import com.mapbox.android.core.location.LocationEngineProvider;
@@ -39,15 +34,11 @@ import com.mapbox.mapboxsdk.maps.MapView;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
 import com.mapbox.mapboxsdk.maps.Style;
+
 import java.lang.ref.WeakReference;
 import java.util.List;
-import java.util.Random;
 
-// Google Firebase
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-
-public class CreateSosActivity extends AppCompatActivity implements
+public class CreateRescueActivity extends AppCompatActivity implements
         OnMapReadyCallback, PermissionsListener, MapboxMap.OnMapClickListener {
 
     private MapView mapView;
@@ -60,11 +51,11 @@ public class CreateSosActivity extends AppCompatActivity implements
     private long DEFAULT_MAX_WAIT_TIME = DEFAULT_INTERVAL_IN_MILLISECONDS * 5;
 
     // Variables needed to listen to location updates
-    private CreateSosActivityLocationCallback callback = new CreateSosActivityLocationCallback(this);
+    private CreateRescueActivity.CreateRescueActivityLocationCallback callback = new CreateRescueActivity.CreateRescueActivityLocationCallback(this);
 
     // Variables for add data to firebase
-    private EditText etName, etPhone, etAddress, etNote;
-    private Button btnCreateSos;
+    private EditText etName, etPhone;
+    private Button btnCreateRescue;
 
     private double lat = 181, lng = 181;
 
@@ -73,32 +64,30 @@ public class CreateSosActivity extends AppCompatActivity implements
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_create_sos);
+        setContentView(R.layout.activity_create_rescue);
 
-        mapView = (MapView) findViewById(R.id.mapView_createSos);
+        mapView = (MapView) findViewById(R.id.mapView_createRescue);
         mapView.onCreate(savedInstanceState);
         mapView.getMapAsync(this);
 
         etName = findViewById(R.id.etName);
         etPhone = findViewById(R.id.etPhone);
-        etAddress = findViewById(R.id.etAddress);
-        etNote = findViewById(R.id.etNote);
 
         // Event handling
-        btnCreateSos = findViewById(R.id.btnCreateSos);
-        CreateSosActivity.EventHandler eventHandler = new CreateSosActivity.EventHandler();
-        btnCreateSos.setOnClickListener(eventHandler);
+        btnCreateRescue = findViewById(R.id.btnCreateRescue);
+        CreateRescueActivity.EventHandler eventHandler = new CreateRescueActivity.EventHandler();
+        btnCreateRescue.setOnClickListener(eventHandler);
 
-        databaseReference = FirebaseDatabase.getInstance().getReference().child("sos");
+        databaseReference = FirebaseDatabase.getInstance().getReference().child("rescue");
     }
 
     // Click listener
     class EventHandler implements View.OnClickListener {
         @Override
         public void onClick(View view) {
-            if (view.getId() == R.id.btnCreateSos) {
-                AddSos();
-                Intent intent = new Intent(CreateSosActivity.this, MainActivity.class);
+            if (view.getId() == R.id.btnCreateRescue) {
+                AddRescue();
+                Intent intent = new Intent(CreateRescueActivity.this, MainActivity.class);
                 startActivity(intent);
                 finish();
             }
@@ -106,32 +95,29 @@ public class CreateSosActivity extends AppCompatActivity implements
     }
 
     // Pass back data
-    public void AddSos() {
+    public void AddRescue() {
         String name = etName.getText().toString();
         String phone = etPhone.getText().toString();
-        String address = etAddress.getText().toString();
-        String note = etNote.getText().toString();
 
         if (lat > 180) {
             lat = mapboxMap.getLocationComponent().getLastKnownLocation().getLatitude();
             lng = mapboxMap.getLocationComponent().getLastKnownLocation().getLongitude();
         }
 
-        Sos newSos = new Sos(name, phone, address, note, lat, lng);
-        Log.d("MINH", "new Sos: "+ newSos);
+        Rescue newRescue = new Rescue(name, phone, lat, lng);
 
-        databaseReference.push().setValue(newSos);
+        databaseReference.push().setValue(newRescue);
     }
 
     @Override
     public void onMapReady(@NonNull final MapboxMap mapboxMap) {
 
-        CreateSosActivity.this.mapboxMap = mapboxMap;
+        CreateRescueActivity.this.mapboxMap = mapboxMap;
 
         mapboxMap.setStyle(Style.MAPBOX_STREETS, new Style.OnStyleLoaded() {
             @Override
             public void onStyleLoaded(@NonNull Style style) {
-                mapboxMap.addOnMapClickListener(CreateSosActivity.this);
+                mapboxMap.addOnMapClickListener(CreateRescueActivity.this);
                 enableLocationComponent(style);
             }
         });
@@ -144,7 +130,7 @@ public class CreateSosActivity extends AppCompatActivity implements
         lng = point.getLongitude();
 
         // Add icon
-        IconFactory iconFactory = IconFactory.getInstance(CreateSosActivity.this);
+        IconFactory iconFactory = IconFactory.getInstance(CreateRescueActivity.this);
         Icon icon = iconFactory.fromResource(R.drawable.mapbox_marker_icon_default);
 
         mapboxMap.addMarker(new MarkerOptions()
@@ -159,26 +145,26 @@ public class CreateSosActivity extends AppCompatActivity implements
         // Check if permissions are enabled and if not request
         if (PermissionsManager.areLocationPermissionsGranted(this)) {
 
-        // Get an instance of the component
-        LocationComponent locationComponent = mapboxMap.getLocationComponent();
+            // Get an instance of the component
+            LocationComponent locationComponent = mapboxMap.getLocationComponent();
 
-        // Set the LocationComponent activation options
-        LocationComponentActivationOptions locationComponentActivationOptions =
-                LocationComponentActivationOptions.builder(this, loadedMapStyle)
-                        .useDefaultLocationEngine(false)
-                        .build();
+            // Set the LocationComponent activation options
+            LocationComponentActivationOptions locationComponentActivationOptions =
+                    LocationComponentActivationOptions.builder(this, loadedMapStyle)
+                            .useDefaultLocationEngine(false)
+                            .build();
 
-        // Activate with the LocationComponentActivationOptions object
-        locationComponent.activateLocationComponent(locationComponentActivationOptions);
+            // Activate with the LocationComponentActivationOptions object
+            locationComponent.activateLocationComponent(locationComponentActivationOptions);
 
-        // Enable to make component visible
-        locationComponent.setLocationComponentEnabled(true);
+            // Enable to make component visible
+            locationComponent.setLocationComponentEnabled(true);
 
-        // Set the component's camera mode
-        locationComponent.setCameraMode(CameraMode.TRACKING);
+            // Set the component's camera mode
+            locationComponent.setCameraMode(CameraMode.TRACKING);
 
-        // Set the component's render mode
-        locationComponent.setRenderMode(RenderMode.COMPASS);
+            // Set the component's render mode
+            locationComponent.setRenderMode(RenderMode.COMPASS);
         } else {
             permissionsManager = new PermissionsManager(this);
             permissionsManager.requestLocationPermissions(this);
@@ -227,12 +213,12 @@ public class CreateSosActivity extends AppCompatActivity implements
         locationEngine.getLastLocation(callback);
     }
 
-    private static class CreateSosActivityLocationCallback
+    private static class CreateRescueActivityLocationCallback
             implements LocationEngineCallback<LocationEngineResult> {
 
-        private final WeakReference<CreateSosActivity> activityWeakReference;
+        private final WeakReference<CreateRescueActivity> activityWeakReference;
 
-        CreateSosActivityLocationCallback(CreateSosActivity activity) {
+        CreateRescueActivityLocationCallback(CreateRescueActivity activity) {
             this.activityWeakReference = new WeakReference<>(activity);
         }
 
@@ -243,7 +229,7 @@ public class CreateSosActivity extends AppCompatActivity implements
          */
         @Override
         public void onSuccess(LocationEngineResult result) {
-            CreateSosActivity activity = activityWeakReference.get();
+            CreateRescueActivity activity = activityWeakReference.get();
 
             if (activity != null) {
                 Location location = result.getLastLocation();
@@ -267,7 +253,7 @@ public class CreateSosActivity extends AppCompatActivity implements
         @Override
         public void onFailure(@NonNull Exception exception) {
             Log.d("MINH", exception.getLocalizedMessage());
-            CreateSosActivity activity = activityWeakReference.get();
+            CreateRescueActivity activity = activityWeakReference.get();
             if (activity != null) {
                 Toast.makeText(activity, exception.getLocalizedMessage(),
                         Toast.LENGTH_SHORT).show();
@@ -278,31 +264,26 @@ public class CreateSosActivity extends AppCompatActivity implements
     @Override
     protected void onStart() {
         super.onStart();
-        Log.d("MINH", "Activity B - onStart()");
     }
 
     @Override
     protected void onRestart() {
         super.onRestart();
-        Log.d("MINH", "Activity B - onRestart()");
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        Log.d("MINH", "Activity B - onResume()");
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        Log.d("MINH", "Activity B - onPause()");
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        Log.d("MINH", "Activity B - onStop()");
     }
 
     @Override
@@ -313,6 +294,5 @@ public class CreateSosActivity extends AppCompatActivity implements
         }
 
         super.onDestroy();
-        Log.d("MINH", "Activity B - onDestroy()");
     }
 }
