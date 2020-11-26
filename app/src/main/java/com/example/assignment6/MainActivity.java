@@ -127,8 +127,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     for (int i = 0; i < sosItems.size(); i++) {
                         mapboxMap.addMarker(new MarkerOptions()
                                 .position(new LatLng(sosItems.get(i).getLat(), sosItems.get(i).getLng()))
-                                .title(sosItems.get(i).getName() + " / " + sosItems.get(i).getMobilePhone())
-                                .snippet(sosItems.get(i).getAddress() + " / " + sosItems.get(i).getNote())
+                                .title(sosItems.get(i).getName() + " / " + sosItems.get(i).getMobilePhone()
+                                    + "\r\n" + sosItems.get(i).getAddress() + " / " + sosItems.get(i).getNote())
+                                .snippet(keys.get(i))
                                 .icon(icon));
                     }
 
