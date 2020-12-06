@@ -4,14 +4,17 @@
 
     <item
         android:id="@+id/create_sos"
-        android:icon="@android:drawable/ic_menu_add"
-        android:title="Create SOS"
-        app:showAsAction="ifRoom" />
+        android:title="Create New SOS"
+        app:showAsAction="never" />
 
     <item
         android:id="@+id/create_rescue"
-        android:icon="@android:drawable/ic_input_add"
-        android:title="Create Rescue"
-        app:showAsAction="ifRoom" />
+        android:title="Create New Rescue Team"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/create_safe_place"
+        android:title="Create New Safe Place"
+        app:showAsAction="never" />
 
 </menu>

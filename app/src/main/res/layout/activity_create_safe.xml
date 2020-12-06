@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+xmlns:mapbox="http://schemas.android.com/apk/res-auto"
+android:layout_width="match_parent"
+android:layout_height="match_parent"
+android:paddingLeft="16dp"
+android:paddingRight="16dp"
+android:orientation="vertical" >
+
+<com.mapbox.mapboxsdk.maps.MapView
+    android:id="@+id/mapView_createSafe"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_weight="1"
+    mapbox:mapbox_cameraTargetLat="49.900152"
+    mapbox:mapbox_cameraTargetLng="-97.141432"
+    mapbox:mapbox_cameraZoom="10" />
+
+<TextView
+    android:id="@+id/tvInformation"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:text="Note Safe Place on Map" />
+
+<EditText
+    android:id="@+id/etAddress"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:ems="10"
+    android:importantForAutofill="no"
+    android:inputType="text"
+    android:hint="Enter Address" />
+
+<Button
+    android:id="@+id/btnCreateSafe"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:layout_gravity="bottom"
+    android:layout_margin="8dp"
+    android:background="@color/colorPrimary"
+    android:text="Create The Safe Place"
+    android:textColor="@android:color/white" />
+
+</LinearLayout>
