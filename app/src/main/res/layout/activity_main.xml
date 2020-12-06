@@ -11,10 +11,10 @@
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/myToolbar"
         android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
+        android:layout_height="wrap_content"
         android:background="?attr/colorPrimary"
         android:elevation="4dp"
-        app:layout_constraintTop_toTopOf="parent"/>
+        app:layout_constraintTop_toTopOf="parent" />
 
     <com.mapbox.mapboxsdk.maps.MapView
         android:id="@+id/mapView"
@@ -22,7 +22,20 @@
         android:layout_height="match_parent"
         mapbox:mapbox_cameraTargetLat="49.900152"
         mapbox:mapbox_cameraTargetLng="-97.141432"
-        mapbox:mapbox_cameraZoom="10" />
+        mapbox:mapbox_cameraZoom="10" >
+
+    </com.mapbox.mapboxsdk.maps.MapView>
+
+    <Button
+        android:id="@+id/btnText"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:layout_margin="8dp"
+        android:background="@android:color/white"
+        android:textColor="@android:color/black"
+        android:text="Red: SOSs  /  Black: Rescue Teams  /  Blue: Safe Places"
+        android:textSize="12sp" />
 
     <Button
         android:id="@+id/btnDelete"
@@ -32,6 +45,8 @@
         android:layout_margin="8dp"
         android:background="@color/colorPrimary"
         android:text="Delete"
-        android:textColor="@android:color/white" />
+        android:textColor="@android:color/white"
+        android:textSize="16sp"
+        android:textStyle="bold" />
 
 </FrameLayout>

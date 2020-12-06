@@ -21,7 +21,7 @@
         android:id="@+id/tvInformation"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Your Infomation" />
+        android:text="Your Information" />
 
     <EditText
         android:id="@+id/etName"
