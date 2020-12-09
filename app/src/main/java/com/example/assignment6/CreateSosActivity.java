@@ -17,6 +17,8 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 // Mapbox
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
@@ -70,6 +72,11 @@ public class CreateSosActivity extends AppCompatActivity implements
 
     private DatabaseReference databaseReference;
 
+    // Firebase instance variables
+    private FirebaseAuth mFirebaseAuth;
+    private FirebaseUser mFirebaseUser;
+    private String mEmail;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -90,6 +97,21 @@ public class CreateSosActivity extends AppCompatActivity implements
         btnCreateSos.setOnClickListener(eventHandler);
 
         databaseReference = FirebaseDatabase.getInstance().getReference().child("sos");
+
+        // Initialize Firebase Auth
+        mFirebaseAuth = FirebaseAuth.getInstance();
+        mFirebaseUser = mFirebaseAuth.getCurrentUser();
+        // Set default username is anonymous.
+        mEmail = "ANONYMOUS";
+        if (mFirebaseUser == null) {
+            // Not signed in, launch the Sign In activity
+            startActivity(new Intent(this, SignInActivity.class));
+            finish();
+            return;
+        } else {
+            mEmail = mFirebaseUser.getEmail();
+            Log.d("MINH", "User Name: " + mEmail);
+        }
     }
 
     // Click listener
@@ -117,7 +139,7 @@ public class CreateSosActivity extends AppCompatActivity implements
             lng = mapboxMap.getLocationComponent().getLastKnownLocation().getLongitude();
         }
 
-        Sos newSos = new Sos(name, phone, address, note, lat, lng);
+        Sos newSos = new Sos(name, phone, address, note, lat, lng, mEmail);
         Log.d("MINH", "new Sos: "+ newSos);
 
         databaseReference.push().setValue(newSos);

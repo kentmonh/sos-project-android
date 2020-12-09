@@ -13,6 +13,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.mapbox.android.core.location.LocationEngine;
@@ -61,6 +63,11 @@ public class CreateSafeActivity extends AppCompatActivity implements
 
     private DatabaseReference databaseReference;
 
+    // Firebase instance variables
+    private FirebaseAuth mFirebaseAuth;
+    private FirebaseUser mFirebaseUser;
+    private String mEmail;
+
     @Override
 
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,6 +86,21 @@ public class CreateSafeActivity extends AppCompatActivity implements
         btnCreateSafe.setOnClickListener(eventHandler);
 
         databaseReference = FirebaseDatabase.getInstance().getReference().child("safe");
+
+        // Initialize Firebase Auth
+        mFirebaseAuth = FirebaseAuth.getInstance();
+        mFirebaseUser = mFirebaseAuth.getCurrentUser();
+        // Set default username is anonymous.
+        mEmail = "ANONYMOUS";
+        if (mFirebaseUser == null) {
+            // Not signed in, launch the Sign In activity
+            startActivity(new Intent(this, SignInActivity.class));
+            finish();
+            return;
+        } else {
+            mEmail = mFirebaseUser.getEmail();
+            Log.d("MINH", "User Name: " + mEmail);
+        }
     }
 
     // Click listener
@@ -103,8 +125,7 @@ public class CreateSafeActivity extends AppCompatActivity implements
             lng = mapboxMap.getLocationComponent().getLastKnownLocation().getLongitude();
         }
 
-        Safe newSafe = new Safe(address, lat, lng);
-
+        Safe newSafe = new Safe(address, lat, lng, mEmail);
 
         databaseReference.push().setValue(newSafe);
     }
