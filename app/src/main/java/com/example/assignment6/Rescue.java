@@ -5,15 +5,17 @@ public class Rescue {
     private String mobilePhone;
     private double lat;
     private double lng;
+    private String email;
 
     public Rescue() {
     }
 
-    public Rescue(String name, String mobilePhone, double lat, double lng) {
+    public Rescue(String name, String mobilePhone, double lat, double lng, String email) {
         this.name = name;
         this.mobilePhone = mobilePhone;
         this.lat = lat;
         this.lng = lng;
+        this.email = email;
     }
 
     public String getName() {
@@ -46,5 +48,13 @@ public class Rescue {
 
     public void setLng(double lng) {
         this.lng = lng;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 }

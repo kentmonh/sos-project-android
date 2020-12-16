@@ -2,7 +2,6 @@
 <menu xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:android="http://schemas.android.com/apk/res/android">
 
-
     <item
         android:id="@+id/create_sos"
         android:title="Create New SOS"
@@ -17,5 +16,11 @@
         android:id="@+id/create_safe_place"
         android:title="Create New Safe Place"
         app:showAsAction="never" />
+
+    <item
+        android:id="@+id/sign_out"
+        android:icon="@android:drawable/ic_menu_set_as"
+        android:title="Sign Out"
+        app:showAsAction="ifRoom" />
 
 </menu>

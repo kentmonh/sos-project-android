@@ -7,17 +7,19 @@ public class Sos {
     private String note;
     private double lat;
     private double lng;
+    private String email;
 
     public Sos() {
     }
 
-    public Sos(String name, String mobilePhone, String address, String note, double lat, double lng) {
+    public Sos(String name, String mobilePhone, String address, String note, double lat, double lng, String email) {
         this.name = name;
         this.mobilePhone = mobilePhone;
         this.address = address;
         this.note = note;
         this.lat = lat;
         this.lng = lng;
+        this.email = email;
     }
 
     public String getName() {
@@ -66,5 +68,13 @@ public class Sos {
 
     public void setLng(double lng) {
         this.lng = lng;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 }

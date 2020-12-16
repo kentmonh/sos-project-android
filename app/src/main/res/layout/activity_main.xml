@@ -34,7 +34,7 @@
         android:layout_margin="8dp"
         android:background="@android:color/white"
         android:textColor="@android:color/black"
-        android:text="Red: SOSs  /  Black: Rescue Teams  /  Blue: Safe Places"
+        android:text="Red: SOS  /  Black: Rescue Teams  /  Blue: Safe Places"
         android:textSize="12sp" />
 
     <Button

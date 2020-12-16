@@ -3,8 +3,13 @@ package com.example.assignment6;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -66,6 +71,12 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private Button btnDelete;
 
+    // Firebase instance variables
+    private FirebaseAuth mFirebaseAuth;
+    private FirebaseUser mFirebaseUser;
+    private String mEmail;
+    private GoogleSignInClient mSignInClient;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -85,6 +96,22 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         btnDelete = findViewById(R.id.btnDelete);
         btnDelete.setVisibility(View.GONE);
+
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken(getString(R.string.default_web_client_id))
+                .requestEmail()
+                .build();
+        mSignInClient = GoogleSignIn.getClient(this, gso);
+
+        // Initialize Firebase Auth
+        mFirebaseAuth = FirebaseAuth.getInstance();
+        mFirebaseUser = mFirebaseAuth.getCurrentUser();
+        // Set default username is anonymous.
+        mEmail = "ANONYMOUS";
+        if (mFirebaseUser != null) {
+            mEmail = mFirebaseUser.getEmail();
+            Log.d("MINH", "User Name: " + mEmail);
+        }
     }
 
     @Override
@@ -130,6 +157,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                         String type = dataSnapshot1.getKey();
                         Log.d("MINH", "Test data type: " + type);
+
                         if (type.equals("sos")) {
                             sosItems = new ArrayList<Sos>();
                             sosKeys = new ArrayList<String>();
@@ -148,11 +176,12 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                                             .position(new LatLng(sosItems.get(i).getLat(), sosItems.get(i).getLng()))
                                             .title(sosItems.get(i).getName() + " / " + sosItems.get(i).getMobilePhone()
                                                     + "\r\n" + sosItems.get(i).getAddress() + " / " + sosItems.get(i).getNote())
-                                            .snippet(type + ":" + sosKeys.get(i))
+                                            .snippet(type + ":" + sosKeys.get(i) + ":" + sosItems.get(i).getEmail())
                                             .icon(iconSos));
                                 }
                             }
                         }
+
                         else if (type.equals("rescue")) {
                             rescueItems = new ArrayList<Rescue>();
                             rescueKeys = new ArrayList<String>();
@@ -172,11 +201,12 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                                     mapboxMap.addMarker(new MarkerOptions()
                                             .position(new LatLng(rescueItems.get(i).getLat(), rescueItems.get(i).getLng()))
                                             .title(rescueItems.get(i).getName() + " / " + rescueItems.get(i).getMobilePhone())
-                                            .snippet(type + ":" + rescueKeys.get(i))
+                                            .snippet(type + ":" + rescueKeys.get(i) + ":" + rescueItems.get(i).getEmail())
                                             .icon(iconRescue));
                                 }
                             }
                         }
+
                         else if (type.equals("safe")) {
                             safeItems = new ArrayList<Safe>();
                             safeKeys = new ArrayList<String>();
@@ -194,7 +224,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                                     mapboxMap.addMarker(new MarkerOptions()
                                             .position(new LatLng(safeItems.get(i).getLat(), safeItems.get(i).getLng()))
                                             .title(safeItems.get(i).getAddress())
-                                            .snippet(type + ":" + safeKeys.get(i))
+                                            .snippet(type + ":" + safeKeys.get(i) + ":" + safeItems.get(i).getEmail())
                                             .icon(iconSafe));
                                 }
                             }
@@ -205,13 +235,20 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                             Marker lastMarker = null;
 
                             public boolean onMarkerClick(@NonNull final Marker marker) {
+                                String[] keys = marker.getSnippet().split(":");
+
                                 if (marker != lastMarker) {
 
                                     marker.showInfoWindow(mapboxMap, mapView);
-                                    btnDelete.setVisibility(View.VISIBLE);
+                                    if (keys[2].equals(mEmail)) {
+                                        btnDelete.setVisibility(View.VISIBLE);
+                                    }
 
                                     if (lastMarker != null) {
                                         lastMarker.hideInfoWindow();
+                                        if (!keys[2].equals(mEmail)) {
+                                            btnDelete.setVisibility(View.GONE);
+                                        }
                                     }
                                 } else {
                                     if (marker.isInfoWindowShown()) {
@@ -219,18 +256,18 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                                         btnDelete.setVisibility(View.GONE);
                                     } else {
                                         marker.showInfoWindow(mapboxMap, mapView);
-                                        btnDelete.setVisibility(View.VISIBLE);
+                                        if (keys[2].equals(mEmail)) {
+                                            btnDelete.setVisibility(View.VISIBLE);
+                                        }
                                     }
                                 }
                                 lastMarker = marker;
 
                                 // Deal with delete function.
-                                String[] keys = marker.getSnippet().split(":");
-
                                 Log.d("MINH", "Location type: " + keys[0]);
                                 Log.d("MINH", "Location key: " + keys[1]);
                                 databaseReference = FirebaseDatabase.getInstance().getReference().child(keys[0]).child(keys[1]);
-                                Log.d("MINH", "Database Reference: " + databaseReference);
+                                Log.d("MINH", "Database Reference: " + databaseReference.getKey());
 
                                 btnDelete.setOnClickListener(new View.OnClickListener() {
                                     @Override
@@ -297,6 +334,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 Intent intentCreateSafeActivity = new Intent(this, CreateSafeActivity.class);
                 startActivity(intentCreateSafeActivity);
                 break;
+            case R.id.sign_out:
+                signOut();
+                break;
         }
 
         return super.onOptionsItemSelected(item);
@@ -352,6 +392,20 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             Toast.makeText(this, "Do not have permission!", Toast.LENGTH_LONG).show();
             finish();
         }
+    }
+
+    private void signOut() {
+        // Firebase sign out
+        mFirebaseAuth.signOut();
+
+        // Google sign out
+        mSignInClient.signOut().addOnCompleteListener(this,
+                new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        Toast.makeText(getApplicationContext(), "You Signed Out", Toast.LENGTH_LONG).show();
+                    }
+                });
     }
 
     @Override
